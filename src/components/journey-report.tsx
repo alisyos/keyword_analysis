@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { FileText, BarChart3, Sparkles, Loader2, TrendingUp, DollarSign, Globe, Megaphone, Search, Target, Users, MessageSquare, BookOpen, ChevronRight, Zap, Activity, Mail, Share2, Monitor } from 'lucide-react';
+import { FileText, BarChart3, Sparkles, Loader2, TrendingUp, DollarSign, Globe, Megaphone, Search, Target, Users, MessageSquare, BookOpen, Activity, Mail, Share2, Monitor } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface KeywordData {
@@ -714,7 +714,7 @@ export default function JourneyReport({ keywords }: JourneyReportProps) {
           {insights[type] ? (
             <ScrollArea className="h-[400px] w-full">
               <div className="whitespace-pre-wrap text-sm text-gray-700">
-                {insights[type]}
+                {typeof insights[type] === 'string' ? insights[type] : JSON.stringify(insights[type], null, 2)}
               </div>
             </ScrollArea>
           ) : (
@@ -831,9 +831,13 @@ export default function JourneyReport({ keywords }: JourneyReportProps) {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={({ name, value, percent }) => 
-                          `${name}: ${formatNumber(value)} (${(percent * 100).toFixed(1)}%)`
-                        }
+                        label={(props) => {
+                          const name = props.name || '';
+                          const value = Number(props.value) || 0;
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          const percent = (props as any).percent || 0;
+                          return `${name}: ${formatNumber(value)} (${(Number(percent) * 100).toFixed(1)}%)`;
+                        }}
                         outerRadius={120}
                         fill="#8884d8"
                         dataKey="value"

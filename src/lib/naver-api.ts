@@ -61,7 +61,11 @@ export class NaverSearchAdAPI {
     keywords?: string;
   }): Promise<KeywordData[]> {
     const uri = '/keywordstool';
-    const queryString = new URLSearchParams(params as any).toString();
+    const queryString = new URLSearchParams(
+      Object.fromEntries(
+        Object.entries(params).map(([key, value]) => [key, String(value)])
+      )
+    ).toString();
     const fullUri = `${uri}?${queryString}`;
     
     // 서명 생성 시에는 경로만 사용 (쿼리 파라미터 제외)
@@ -94,7 +98,7 @@ export class NaverSearchAdAPI {
       try {
         const data = JSON.parse(responseText);
         return data.keywordList || [];
-      } catch (parseError) {
+      } catch {
         console.error('Failed to parse response:', responseText);
         throw new Error('Invalid JSON response from API');
       }

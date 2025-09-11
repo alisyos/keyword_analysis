@@ -21,12 +21,12 @@ interface KeywordData {
 interface InsightRequest {
   keywords: KeywordData[];
   insightType: 'marketing' | 'budget' | 'landing' | 'da' | 'sa';
-  stageData?: any;
+  stageData?: Record<string, unknown>;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const { keywords, insightType, stageData } = await request.json() as InsightRequest;
+    const { keywords, insightType } = await request.json() as InsightRequest;
 
     const stageKeywords = {
       '문제 인식': keywords.filter(kw => kw.buyerJourney === '문제 인식'),
