@@ -129,51 +129,106 @@ ${dataContext}
         break;
 
       case 'landing':
-        systemPrompt = '당신은 랜딩 페이지 최적화 전문가입니다. 구매여정 단계별로 효과적인 랜딩 페이지 전략을 수립합니다.';
+        systemPrompt = '당신은 랜딩 페이지 최적화 전문가입니다. 구매여정 단계별로 효과적인 랜딩 페이지 전략을 수립합니다. 반드시 지정된 JSON 형식으로만 응답하세요.';
         userPrompt = `다음 구매여정 단계별 키워드 데이터를 기반으로 랜딩 페이지 전략을 제안해주세요:
 
 ${dataContext}
 
-각 구매여정 단계별로:
-1. 랜딩 페이지 주요 메시지
-2. 필수 구성 요소
-3. CTA(Call-to-Action) 전략
-4. 콘텐츠 구성 제안
-5. 전환 최적화 포인트
+다음 JSON 형식으로 응답해주세요:
+{
+  "stages": {
+    "문제 인식": {
+      "mainMessage": ["주요 메시지 1", "주요 메시지 2"],
+      "essentialComponents": ["구성 요소 1", "구성 요소 2", "구성 요소 3"],
+      "ctaStrategy": ["CTA 버튼 텍스트 1", "CTA 버튼 텍스트 2"],
+      "contentStructure": ["콘텐츠 섹션 1", "콘텐츠 섹션 2", "콘텐츠 섹션 3"],
+      "conversionPoints": ["최적화 포인트 1", "최적화 포인트 2", "최적화 포인트 3"],
+      "keywords": ["주요 키워드 3-5개"]
+    },
+    "정보 탐색": { ... 동일한 구조 },
+    "대안 평가": { ... 동일한 구조 },
+    "구매 결정": { ... 동일한 구조 },
+    "구매 행동": { ... 동일한 구조 },
+    "구매 후 행동": { ... 동일한 구조 }
+  },
+  "summary": "전체 랜딩 페이지 전략 요약 (3-4문장)"
+}
 
-구체적이고 실행 가능한 랜딩 페이지 전략을 제공해주세요.`;
+각 단계별로 구체적이고 실행 가능한 랜딩 페이지 전략을 제공하되, 해당 단계에 키워드가 없으면 해당 단계는 생략하세요.`;
         break;
 
       case 'da':
-        systemPrompt = '당신은 디스플레이 광고 전문가입니다. 구매여정 단계별로 효과적인 DA 광고 전략과 크리에이티브를 제안합니다.';
+        systemPrompt = '당신은 디스플레이 광고 전문가입니다. 구매여정 단계별로 효과적인 DA 광고 전략과 크리에이티브를 제안합니다. **중요: 반드시 유효한 JSON 형식으로만 응답하세요. 추가 설명이나 주석 없이 순수한 JSON만 반환하세요.**';
         userPrompt = `다음 구매여정 단계별 키워드 데이터를 기반으로 DA 광고 전략을 제안해주세요:
 
 ${dataContext}
 
-각 구매여정 단계별로:
-1. 타겟팅 전략
-2. 광고 메시지 방향
-3. 비주얼 컨셉 제안
-4. 광고 소재 예시 (헤드라인, 설명문구)
-5. 리마케팅 전략
+**반드시 아래의 정확한 JSON 구조로만 응답하세요. 추가 텍스트나 설명 없이 JSON만 반환:**
 
-구체적인 광고 소재 예시를 포함하여 실행 가능한 DA 광고 전략을 제공해주세요.`;
+{
+  "stages": {
+    "문제 인식": {
+      "targeting": ["타겟팅 전략 1", "타겟팅 전략 2", "타겟팅 전략 3"],
+      "messageDirection": "광고 메시지 방향 설명 (2-3문장)",
+      "visualConcept": ["비주얼 컨셉 1", "비주얼 컨셉 2"],
+      "creatives": {
+        "headlines": ["헤드라인 예시 1", "헤드라인 예시 2"],
+        "descriptions": ["설명문구 예시 1", "설명문구 예시 2"]
+      },
+      "remarketing": "리마케팅 전략 설명 (2-3문장)",
+      "keywords": ["주요 타겟 키워드 3-5개"]
+    },
+    "정보 탐색": { "targeting": [...], "messageDirection": "...", "visualConcept": [...], "creatives": {...}, "remarketing": "...", "keywords": [...] },
+    "대안 평가": { "targeting": [...], "messageDirection": "...", "visualConcept": [...], "creatives": {...}, "remarketing": "...", "keywords": [...] },
+    "구매 결정": { "targeting": [...], "messageDirection": "...", "visualConcept": [...], "creatives": {...}, "remarketing": "...", "keywords": [...] },
+    "구매 행동": { "targeting": [...], "messageDirection": "...", "visualConcept": [...], "creatives": {...}, "remarketing": "...", "keywords": [...] },
+    "구매 후 행동": { "targeting": [...], "messageDirection": "...", "visualConcept": [...], "creatives": {...}, "remarketing": "...", "keywords": [...] }
+  },
+  "summary": "전체 DA 광고 전략 요약 (3-4문장)"
+}
+
+**주의사항:**
+1. 키워드가 없는 단계도 포함하되, 일반적인 전략을 제공
+2. 모든 문자열은 큰따옴표(")를 사용
+3. JSON 구문 오류가 없도록 주의
+4. 응답은 오직 JSON 객체만 포함`;
         break;
 
       case 'sa':
-        systemPrompt = '당신은 검색광고 전문가입니다. 구매여정 단계별로 효과적인 SA 광고 전략과 광고문구를 제안합니다.';
+        systemPrompt = '당신은 검색광고 전문가입니다. 구매여정 단계별로 효과적인 SA 광고 전략과 광고문구를 제안합니다. **중요: 반드시 유효한 JSON 형식으로만 응답하세요. 추가 설명이나 주석 없이 순수한 JSON만 반환하세요.**';
         userPrompt = `다음 구매여정 단계별 키워드 데이터를 기반으로 SA 광고 전략을 제안해주세요:
 
 ${dataContext}
 
-각 구매여정 단계별로:
-1. 키워드 그룹 전략
-2. 광고 문구 예시 (제목, 설명)
-3. 광고 확장 전략
-4. 입찰 전략
-5. 부정 키워드 제안
+**반드시 아래의 정확한 JSON 구조로만 응답하세요. 추가 텍스트나 설명 없이 JSON만 반환:**
 
-구체적인 광고 문구 예시를 포함하여 실행 가능한 SA 광고 전략을 제공해주세요.`;
+{
+  "stages": {
+    "문제 인식": {
+      "keywordStrategy": ["키워드 그룹 전략 1", "키워드 그룹 전략 2", "키워드 그룹 전략 3"],
+      "adCopy": {
+        "headlines": ["제목1 예시", "제목2 예시"],
+        "descriptions": ["설명 예시"]
+      },
+      "extensions": ["확장 전략 1", "확장 전략 2", "확장 전략 3"],
+      "biddingStrategy": "입찰 전략 설명 (2-3문장)",
+      "negativeKeywords": ["부정 키워드 1", "부정 키워드 2", "부정 키워드 3"],
+      "keywords": ["주요 타겟 키워드 3-5개"]
+    },
+    "정보 탐색": { "keywordStrategy": [...], "adCopy": {...}, "extensions": [...], "biddingStrategy": "...", "negativeKeywords": [...], "keywords": [...] },
+    "대안 평가": { "keywordStrategy": [...], "adCopy": {...}, "extensions": [...], "biddingStrategy": "...", "negativeKeywords": [...], "keywords": [...] },
+    "구매 결정": { "keywordStrategy": [...], "adCopy": {...}, "extensions": [...], "biddingStrategy": "...", "negativeKeywords": [...], "keywords": [...] },
+    "구매 행동": { "keywordStrategy": [...], "adCopy": {...}, "extensions": [...], "biddingStrategy": "...", "negativeKeywords": [...], "keywords": [...] },
+    "구매 후 행동": { "keywordStrategy": [...], "adCopy": {...}, "extensions": [...], "biddingStrategy": "...", "negativeKeywords": [...], "keywords": [...] }
+  },
+  "summary": "전체 SA 광고 전략 요약 (3-4문장)"
+}
+
+**주의사항:**
+1. 키워드가 없는 단계도 포함하되, 일반적인 전략을 제공
+2. 모든 문자열은 큰따옴표(")를 사용
+3. JSON 구문 오류가 없도록 주의
+4. 응답은 오직 JSON 객체만 포함`;
         break;
 
       default:
@@ -188,13 +243,13 @@ ${dataContext}
       ],
       temperature: 0.7,
       max_tokens: 2000,
-      response_format: (insightType === 'marketing' || insightType === 'budget') ? { type: 'json_object' } : undefined,
+      response_format: (insightType === 'marketing' || insightType === 'budget' || insightType === 'landing' || insightType === 'da' || insightType === 'sa') ? { type: 'json_object' } : undefined,
     });
 
     const content = completion.choices[0]?.message?.content || '';
     
-    // For marketing and budget insights, parse JSON response
-    if (insightType === 'marketing' || insightType === 'budget') {
+    // For all JSON insights, parse JSON response
+    if (insightType === 'marketing' || insightType === 'budget' || insightType === 'landing' || insightType === 'da' || insightType === 'sa') {
       try {
         const jsonInsight = JSON.parse(content);
         return NextResponse.json({ insight: jsonInsight });

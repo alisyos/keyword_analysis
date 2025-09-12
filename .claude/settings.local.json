@@ -8,7 +8,9 @@
       "Bash(npx shadcn@latest add:*)",
       "Bash(vercel logs:*)",
       "Bash(npm run build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(vercel:*)",
+      "WebFetch(domain:keyword-analysis-lu8zd4w1m-alisyos2-gmailcoms-projects.vercel.app)"
     ],
     "deny": [],
     "ask": []
