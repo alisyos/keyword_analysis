@@ -11,20 +11,26 @@ export function Header() {
         </div>
 
         <nav className="flex items-center space-x-6">
-          <Link 
-            href="/" 
+          <Link
+            href="/"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             키워드 분석
           </Link>
-          <Link 
-            href="/history" 
+          <Link
+            href="/brand-analysis"
+            className="text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            브랜드 분석
+          </Link>
+          <Link
+            href="/history"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             검색 기록
           </Link>
-          <Link 
-            href="/settings" 
+          <Link
+            href="/settings"
             className="text-gray-600 hover:text-gray-900 transition-colors"
           >
             설정

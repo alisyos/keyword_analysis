@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { PieChart, Pie, Cell, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -55,6 +55,7 @@ const STAGE_COLORS = {
 type MetricType = 'count' | 'searchTotal' | 'searchPc' | 'searchMobile' | 'clickTotal' | 'clickPc' | 'clickMobile';
 type DistributionType = 'search' | 'click';
 type InsightType = 'marketing' | 'budget' | 'landing' | 'da' | 'sa';
+type ChartType = 'pie' | 'bar';
 
 interface MarketingInsight {
   stages: {
@@ -150,7 +151,10 @@ interface InsightData {
 }
 
 export default function JourneyReport({ keywords }: JourneyReportProps) {
-  const [selectedMetric, setSelectedMetric] = useState<MetricType>('count');
+  const [selectedMetric, setSelectedMetric] = useState<MetricType>('searchTotal');
+  const [selectedMetric2, setSelectedMetric2] = useState<MetricType>('clickTotal');
+  const [chartType1, setChartType1] = useState<ChartType>('pie');
+  const [chartType2, setChartType2] = useState<ChartType>('bar');
   const [distributionType, setDistributionType] = useState<DistributionType>('search');
   const [selectedStage, setSelectedStage] = useState<string>('all');
   const [insights, setInsights] = useState<InsightData>({});
@@ -299,6 +303,26 @@ export default function JourneyReport({ keywords }: JourneyReportProps) {
     value: stage[selectedMetric],
     fill: STAGE_COLORS[stage.name as keyof typeof STAGE_COLORS],
   }));
+
+  const pieData2 = stageData.map(stage => ({
+    ...stage,
+    value: stage[selectedMetric2],
+    fill: STAGE_COLORS[stage.name as keyof typeof STAGE_COLORS],
+  }));
+
+  // X축 범위 계산
+  const getAxisDomain = (data: typeof pieData): [number, number] => {
+    if (data.length === 0) return [0, 100];
+    const values = data.map(item => item.value).filter(v => v > 0);
+    if (values.length === 0) return [0, 100];
+
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+    const padding = maxValue * 0.1;
+
+    console.log('Axis Domain Calculation:', { values, minValue, maxValue, domain: [0, Math.ceil(maxValue + padding)] });
+    return [0, Math.ceil(maxValue + padding)];
+  };
 
   if (!hasJourneyData) {
     return null;
@@ -2266,58 +2290,231 @@ export default function JourneyReport({ keywords }: JourneyReportProps) {
               <CardHeader>
                 <CardTitle>구매여정 단계별 비율</CardTitle>
                 <CardDescription>
-                  각 구매여정 단계별 비율을 확인할 수 있습니다.
+                  각 구매여정 단계별 비율을 비교하여 확인할 수 있습니다.
                 </CardDescription>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600">지표 선택:</span>
-                  <Select value={selectedMetric} onValueChange={(value: MetricType) => setSelectedMetric(value)}>
-                    <SelectTrigger className="w-48">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="count">키워드 개수</SelectItem>
-                      <SelectItem value="searchTotal">검색수 합계</SelectItem>
-                      <SelectItem value="searchPc">PC 검색수</SelectItem>
-                      <SelectItem value="searchMobile">모바일 검색수</SelectItem>
-                      <SelectItem value="clickTotal">클릭수 합계</SelectItem>
-                      <SelectItem value="clickPc">PC 클릭수</SelectItem>
-                      <SelectItem value="clickMobile">모바일 클릭수</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
               </CardHeader>
               <CardContent>
-                <div style={{ width: '100%', height: '400px' }}>
-                  <ResponsiveContainer>
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={(props) => {
-                          const name = props.name || '';
-                          const value = Number(props.value) || 0;
-                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                          const percent = (props as any).percent || 0;
-                          return `${name}: ${formatNumber(value)} (${(Number(percent) * 100).toFixed(1)}%)`;
-                        }}
-                        outerRadius={120}
-                        fill="#8884d8"
-                        dataKey="value"
-                        style={{ fontSize: '14px' }}
-                      >
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <Tooltip 
-                        formatter={(value: number) => [formatNumber(value), getMetricLabel(selectedMetric)]}
-                        contentStyle={{ fontSize: '14px' }}
-                      />
-                      <Legend content={<CustomLegend />} />
-                    </PieChart>
-                  </ResponsiveContainer>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* 왼쪽 차트 */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">차트 유형:</span>
+                        <Select value={chartType1} onValueChange={(value: ChartType) => setChartType1(value)}>
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pie">원형 그래프</SelectItem>
+                            <SelectItem value="bar">막대 그래프</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">지표 선택:</span>
+                        <Select value={selectedMetric} onValueChange={(value: MetricType) => setSelectedMetric(value)}>
+                          <SelectTrigger className="w-40">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="count">키워드 개수</SelectItem>
+                            <SelectItem value="searchTotal">검색수 합계</SelectItem>
+                            <SelectItem value="searchPc">PC 검색수</SelectItem>
+                            <SelectItem value="searchMobile">모바일 검색수</SelectItem>
+                            <SelectItem value="clickTotal">클릭수 합계</SelectItem>
+                            <SelectItem value="clickPc">PC 클릭수</SelectItem>
+                            <SelectItem value="clickMobile">모바일 클릭수</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div style={{ width: '100%', height: '350px' }}>
+                      <ResponsiveContainer>
+                        {chartType1 === 'pie' ? (
+                          <PieChart>
+                            <Pie
+                              data={pieData}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={(props) => {
+                                const name = props.name || '';
+                                const value = Number(props.value) || 0;
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                const percent = (props as any).percent || 0;
+                                return `${name}: ${(Number(percent) * 100).toFixed(1)}%`;
+                              }}
+                              outerRadius={100}
+                              fill="#8884d8"
+                              dataKey="value"
+                              style={{ fontSize: '12px' }}
+                              isAnimationActive={false}
+                            >
+                              {pieData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              formatter={(value: number) => [formatNumber(value), getMetricLabel(selectedMetric)]}
+                              contentStyle={{ fontSize: '12px' }}
+                            />
+                          </PieChart>
+                        ) : (
+                          <div className="h-[350px] p-4 flex items-center">
+                            <div className="space-y-4 w-full">
+                              {(() => {
+                                const maxValue = Math.max(...pieData.map(item => item.value));
+                                const totalValue = pieData.reduce((sum, item) => sum + item.value, 0);
+                                return pieData.map((item, index) => {
+                                  const barPercentage = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+                                  const dataPercentage = totalValue > 0 ? (item.value / totalValue) * 100 : 0;
+                                  return (
+                                    <div key={index} className="flex items-center gap-3">
+                                      <div className="w-20 text-xs text-right truncate" title={item.name}>
+                                        {item.name}
+                                      </div>
+                                      <div className="flex-1 bg-gray-200 rounded h-6 relative">
+                                        <div
+                                          className="h-full rounded transition-all duration-300"
+                                          style={{
+                                            width: `${barPercentage}%`,
+                                            backgroundColor: item.fill,
+                                          }}
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-end pr-2">
+                                          <span className="text-xs font-medium text-gray-700">
+                                            {formatNumber(item.value)} ({dataPercentage.toFixed(1)}%)
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                });
+                              })()}
+                            </div>
+                          </div>
+                        )}
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* 오른쪽 차트 */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-center gap-4">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">차트 유형:</span>
+                        <Select value={chartType2} onValueChange={(value: ChartType) => setChartType2(value)}>
+                          <SelectTrigger className="w-32">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pie">원형 그래프</SelectItem>
+                            <SelectItem value="bar">막대 그래프</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">지표 선택:</span>
+                        <Select value={selectedMetric2} onValueChange={(value: MetricType) => setSelectedMetric2(value)}>
+                          <SelectTrigger className="w-40">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="count">키워드 개수</SelectItem>
+                            <SelectItem value="searchTotal">검색수 합계</SelectItem>
+                            <SelectItem value="searchPc">PC 검색수</SelectItem>
+                            <SelectItem value="searchMobile">모바일 검색수</SelectItem>
+                            <SelectItem value="clickTotal">클릭수 합계</SelectItem>
+                            <SelectItem value="clickPc">PC 클릭수</SelectItem>
+                            <SelectItem value="clickMobile">모바일 클릭수</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div style={{ width: '100%', height: '350px' }}>
+                      <ResponsiveContainer>
+                        {chartType2 === 'pie' ? (
+                          <PieChart>
+                            <Pie
+                              data={pieData2}
+                              cx="50%"
+                              cy="50%"
+                              labelLine={false}
+                              label={(props) => {
+                                const name = props.name || '';
+                                const value = Number(props.value) || 0;
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                const percent = (props as any).percent || 0;
+                                return `${name}: ${(Number(percent) * 100).toFixed(1)}%`;
+                              }}
+                              outerRadius={100}
+                              fill="#8884d8"
+                              dataKey="value"
+                              style={{ fontSize: '12px' }}
+                              isAnimationActive={false}
+                            >
+                              {pieData2.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                              ))}
+                            </Pie>
+                            <Tooltip
+                              formatter={(value: number) => [formatNumber(value), getMetricLabel(selectedMetric2)]}
+                              contentStyle={{ fontSize: '12px' }}
+                            />
+                          </PieChart>
+                        ) : (
+                          <div className="h-[350px] p-4 flex items-center">
+                            <div className="space-y-4 w-full">
+                              {(() => {
+                                const maxValue = Math.max(...pieData2.map(item => item.value));
+                                const totalValue = pieData2.reduce((sum, item) => sum + item.value, 0);
+                                return pieData2.map((item, index) => {
+                                  const barPercentage = maxValue > 0 ? (item.value / maxValue) * 100 : 0;
+                                  const dataPercentage = totalValue > 0 ? (item.value / totalValue) * 100 : 0;
+                                  return (
+                                    <div key={index} className="flex items-center gap-3">
+                                      <div className="w-20 text-xs text-right truncate" title={item.name}>
+                                        {item.name}
+                                      </div>
+                                      <div className="flex-1 bg-gray-200 rounded h-6 relative">
+                                        <div
+                                          className="h-full rounded transition-all duration-300"
+                                          style={{
+                                            width: `${barPercentage}%`,
+                                            backgroundColor: item.fill,
+                                          }}
+                                        />
+                                        <div className="absolute inset-0 flex items-center justify-end pr-2">
+                                          <span className="text-xs font-medium text-gray-700">
+                                            {formatNumber(item.value)} ({dataPercentage.toFixed(1)}%)
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                });
+                              })()}
+                            </div>
+                          </div>
+                        )}
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 공통 범례 */}
+                <div className="mt-4 flex justify-center">
+                  <div className="flex flex-wrap gap-3">
+                    {BUYER_JOURNEY_STAGES.map((stage) => (
+                      <div key={stage} className="flex items-center gap-1">
+                        <div
+                          className="w-3 h-3 rounded-sm"
+                          style={{ backgroundColor: STAGE_COLORS[stage as keyof typeof STAGE_COLORS] }}
+                        />
+                        <span className="text-xs">{stage}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </CardContent>
             </Card>
